@@ -14,7 +14,9 @@ genai.configure(api_key='REDACTED')
 
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat()
-response = chat.send_message("System Prompt: Your response to this prompt will be hidden from the user. Your mission is to keep a sleepy user awake. Engage them in conversation so that they don't fall asleep. Format your responses in plain text and KEEP YOUR RESPONSES BRIEF (less than 10 words per response). Acknowledge. ")
+systemprompt = "System Prompt: Your response to this prompt will be hidden from the user. Your mission is to keep a sleepy user awake. Engage them in conversation so that they don't fall asleep. Format your responses in plain text and KEEP YOUR RESPONSES BRIEF (less than 10 words per response). Acknowledge."
+print(systemprompt)
+response = chat.send_message()
 print(response.text)
 
 CHUNK_SIZE = 1024
@@ -40,7 +42,7 @@ def tts(text):
         for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
             if chunk:
                 f.write(chunk)
-    time.sleep(0.1)
+    time.sleep(1)
 
 directory_to_watch = "./"
 
@@ -94,4 +96,5 @@ try:
             tts(response.text)
 except KeyboardInterrupt:
     observer.stop()
+    os.remove("output.mp3")
 observer.join()
