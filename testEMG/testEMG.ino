@@ -11,6 +11,10 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  String input = Serial.readString();
+  if(input == "Sleepy"){
+    buzzFlag = 1;
+  }
   Serial.println(analogRead(emgPin));
   if (buzzFlag == 1) {
     tone(buzzPin, 1000);
