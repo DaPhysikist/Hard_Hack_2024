@@ -101,22 +101,20 @@ def trigger_sleepy():
     global sleepy
     sleepy = 1
 
-def chat_loop():
-    global sleepy
+try:
     while True:
-        try:
-            userInput = getUserInput()
-            if userInput != None: 
-                print("User: " + userInput)
-                response = chat.send_message(userInput)
-                print("Chatbot: " + response.text)
-                tts(response.text)
-            if sleepy == 1:
-                message = "I am feeling sleepy. Gently wake me up."
-                response = chat.send_message(message)
-                tts(response.text)
-                sleepy = 0
-        except KeyboardInterrupt:
-            observer.stop()
-            os.remove("output.mp3")
-            observer.join()
+        userInput = getUserInput()
+        if userInput != None: 
+            print("User: " + userInput)
+            response = chat.send_message(userInput)
+            print("Chatbot: " + response.text)
+            tts(response.text)
+        if sleepy == 1:
+            message = "I am feeling sleepy. Gently wake me up."
+            response = chat.send_message(message)
+            tts(response.text)
+            sleepy = 0
+except KeyboardInterrupt:
+    observer.stop()
+    os.remove("output.mp3")
+observer.join()
