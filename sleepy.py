@@ -17,3 +17,4 @@ def trigger_sleepy():
     while (i<100):
         ser.write(b'Sleepy\n')
         i+=1
+    

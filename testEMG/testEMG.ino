@@ -2,7 +2,7 @@ int emgVal = 0;
 int count = 0;
 const int emgPin = A0;
 const int buzzPin = 8;
-const int thres = 600;
+const int thres = 400;
 const int time = 500;
 int buzzFlag = 0;
 void setup() {
