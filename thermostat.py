@@ -34,7 +34,7 @@ def trigger_thermostat(temperature):
     response = post_request(url, data1)
     while response.status_code == 401: 
         access_key = get_access_key()
-        response = post_request(data1)
+        response = post_request(url, data1)
 
     if response.status_code != 200:
         print(f"Failed to set mode: {response.json()}")
@@ -47,6 +47,6 @@ def trigger_thermostat(temperature):
         }
     }
 
-    response2 = post_request(data2)
+    response2 = post_request(url, data2)
     if response2.status_code != 200:
         print(f"Failed to set temperature: {response2.json()}")
