@@ -6,11 +6,17 @@ from watchdog.events import FileSystemEventHandler
 import requests
 import google.generativeai as genai
 import speech_recognition as sr
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path='./homeinfo.env')
+
+gga_key = os.environ.get('GGA_KEY')
+ela_key = os.environ.get('ELA_KEY')
 
 # Initialize the recognizer
 recognizer = sr.Recognizer()
 
-genai.configure(api_key='REDACTED')
+genai.configure(api_key=gga_key)
 
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat()
@@ -25,7 +31,7 @@ url = "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
 headers = {
   "Accept": "audio/mpeg",
   "Content-Type": "application/json",
-  "xi-api-key": "REDACTED"
+  "xi-api-key": f"{ela_key}"
 }
 
 def tts(text):
