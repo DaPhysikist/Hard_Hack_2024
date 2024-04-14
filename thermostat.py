@@ -2,16 +2,27 @@ import requests
 import os
 from dotenv import load_dotenv
 
-access_key = ''
 load_dotenv(dotenv_path='./homeinfo.env')
+access_key = ""
 
-url = os.environ.get('URL')
+def get_access_key():
+    refresh_url = os.environ.get('REFRESH_URL')
+    refresh_response = requests.post(refresh_url)
+    refresh_json = refresh_response.json()
+    return refresh_json["access_token"]
 
-while True:
+def post_request(url, data):
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Bearer {access_key}'
     }
+    return requests.post(url, headers=headers, json=data)
+
+def trigger_thermostat(temperature):
+    global access_key
+
+    url = os.environ.get('URL')
+    access_key = get_access_key()
 
     data1 = {
         "command": "sdm.devices.commands.ThermostatMode.SetMode",
@@ -20,28 +31,22 @@ while True:
         }
     }
 
-    response = requests.post(url, headers=headers, json=data1)
-    response_json = response.json()
+    response = post_request(url, data1)
+    while response.status_code == 401: 
+        access_key = get_access_key()
+        response = post_request(data1)
 
-    if "error" in response_json:
-        if response_json["error"]["code"] == 401:
-            refresh_url = os.environ.get('REFRESH_URL')
-            refresh_response = requests.post(refresh_url)
-            refresh_json = refresh_response.json()
-            access_key = refresh_json["access_token"]
-    else:
-        break
+    if response.status_code != 200:
+        print(f"Failed to set mode: {response.json()}")
+        return
 
-headers = {
-    'Content-Type': 'application/json',
-    'Authorization': f'Bearer {access_key}'
-}
-
-data2 = {
-    "command": "sdm.devices.commands.ThermostatTemperatureSetpoint.SetCool",
-    "params": {
-        "coolCelsius": 22.0
+    data2 = {
+        "command": "sdm.devices.commands.ThermostatTemperatureSetpoint.SetCool",
+        "params": {
+            "coolCelsius": temperature
+        }
     }
-}
 
-response2 = requests.post(url, headers=headers, json=data2)
+    response2 = post_request(data2)
+    if response2.status_code != 200:
+        print(f"Failed to set temperature: {response2.json()}")
