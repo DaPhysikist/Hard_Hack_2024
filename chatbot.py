@@ -20,8 +20,10 @@ genai.configure(api_key=gga_key)
 
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat()
-response = chat.send_message("System Prompt: Your response to this prompt will be hidden from the user. Your mission is to keep a sleepy user awake. Engage them in conversation so that they don't fall asleep. Format your responses in plain text and KEEP YOUR RESPONSES BRIEF (less than 10 words per response). Acknowledge. ")
-print(response.text)
+systemprompt = "System Prompt: Your response to this prompt will be hidden from the user. Your mission is to keep a sleepy user awake. Engage them in conversation so that they don't fall asleep. Format your responses in plain text and KEEP YOUR RESPONSES BRIEF (less than 10 words per response). Acknowledge."
+print(systemprompt)
+response = chat.send_message(systemprompt)
+print("System Response: " + response.text)
 
 CHUNK_SIZE = 1024
 url = "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
@@ -46,7 +48,7 @@ def tts(text):
         for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
             if chunk:
                 f.write(chunk)
-    time.sleep(0.1)
+    time.sleep(1)
 
 directory_to_watch = "./"
 
@@ -94,10 +96,11 @@ try:
     while True:
         userInput = getUserInput()
         if userInput != None: 
-            print(userInput)
+            print("User: " + userInput)
             response = chat.send_message(userInput)
-            print(response.text)
+            print("Chatbot: " + response.text)
             tts(response.text)
 except KeyboardInterrupt:
     observer.stop()
+    os.remove("output.mp3")
 observer.join()
