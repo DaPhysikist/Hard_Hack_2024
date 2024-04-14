@@ -7,6 +7,7 @@ import requests
 import google.generativeai as genai
 import speech_recognition as sr
 from dotenv import load_dotenv
+import threading
 
 load_dotenv(dotenv_path='./homeinfo.env')
 
@@ -26,7 +27,9 @@ response = chat.send_message(systemprompt)
 print("System Response: " + response.text)
 
 CHUNK_SIZE = 1024
+TIMEOUT = 60  #timeout after one minute
 url = "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
+sleepy = 0
 
 headers = {
   "Accept": "audio/mpeg",
@@ -62,18 +65,21 @@ class MyHandler(FileSystemEventHandler):
         # Get the modification time of the file
         modification_time = os.path.getmtime(filepath)
         # Check if the modification occurred shortly after the creation
-        if modification_time - self.last_modification_time > 1:
-            if not pygame.mixer.get_init():
-                pygame.mixer.init()
-            pygame.mixer.music.load(filepath)
-            pygame.mixer.music.play()
-            while pygame.mixer.music.get_busy():
-                time.sleep(0.1)
-            # Stop the mixer and close the file
-            pygame.mixer.music.stop()
-            pygame.mixer.quit()
-        # Update the last modification time
-        self.last_modification_time = modification_time
+        if os.path.exists("output.mp3"):
+            if modification_time - self.last_modification_time > 1:
+                if not pygame.mixer.get_init():
+                    pygame.mixer.init()
+                pygame.mixer.music.load(filepath)
+                pygame.mixer.music.play()
+                while pygame.mixer.music.get_busy():
+                    time.sleep(0.1)
+                # Stop the mixer and close the file
+                pygame.mixer.music.stop()
+                pygame.mixer.quit()
+            # Update the last modification time
+            self.last_modification_time = modification_time
+        else:
+            print("Output file not found")
 # Set up event handler and observer
 event_handler = MyHandler()
 observer = Observer()
@@ -82,7 +88,7 @@ observer.start()
 
 def getUserInput():
     with sr.Microphone() as source:
-        audio = recognizer.listen(source)
+        audio = recognizer.listen(source, timeout=TIMEOUT)
     try:
         text = recognizer.recognize_google(audio)
         return text
@@ -90,7 +96,10 @@ def getUserInput():
         return None
     except sr.RequestError as e:
         return None
-
+    
+def trigger_sleepy():
+    global sleepy
+    sleepy = 1
 
 try:
     while True:
@@ -100,6 +109,11 @@ try:
             response = chat.send_message(userInput)
             print("Chatbot: " + response.text)
             tts(response.text)
+        if sleepy == 1:
+            message = "I am feeling sleepy. Gently wake me up."
+            response = chat.send_message(message)
+            tts(response.text)
+            sleepy = 0
 except KeyboardInterrupt:
     observer.stop()
     os.remove("output.mp3")
