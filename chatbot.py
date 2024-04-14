@@ -103,8 +103,8 @@ def trigger_sleepy():
 
 def chat_loop():
     global sleepy
-    try:
-        while True:
+    while True:
+        try:
             userInput = getUserInput()
             if userInput != None: 
                 print("User: " + userInput)
@@ -116,7 +116,7 @@ def chat_loop():
                 response = chat.send_message(message)
                 tts(response.text)
                 sleepy = 0
-    except KeyboardInterrupt:
-        observer.stop()
-        os.remove("output.mp3")
-        observer.join()
+        except KeyboardInterrupt:
+            observer.stop()
+            os.remove("output.mp3")
+            observer.join()
